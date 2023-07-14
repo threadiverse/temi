@@ -1,0 +1,39 @@
+[package]
+name = "temi"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+crossterm = "0.26"
+hashbrown = "0.14"
+http = "0.2"
+lemmy_api_common = "0.18"
+signal-hook = "0.3"
+
+[dependencies.image]
+version = "0.24"
+
+[dependencies.tui]
+version = "0.21"
+package = "ratatui"
+git = "https://github.com/tui-rs-revival/ratatui"
+
+[dependencies.hyper]
+version = "0.14"
+
+[dependencies.hyper-tls]
+version = "0.5"
+
+[dependencies.serde]
+version = "1"
+features = ["derive"]
+
+[dependencies.serde_json]
+version = "1"
+
+[dependencies.tokio]
+version = "1"
+features = ["full"]
+
+[features]
+debug_endpoints = []
