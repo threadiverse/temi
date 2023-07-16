@@ -71,8 +71,8 @@ pub fn draw_post_screen(
 
                 let post_text = Paragraph::new(lines)
                     .style(body_style())
-                    .block(title_block("temi : Post"))
-                    .wrap(Wrap { trim: true })
+                    .block(title_block("Post"))
+                    .wrap(Wrap { trim: false })
                     .scroll((app.vertical_scroll as u16, app.horizontal_scroll as u16));
 
                 f.render_widget(post_text, chunks[0]);
@@ -144,8 +144,8 @@ pub fn draw_post_screen(
 
                 let comment_block = Paragraph::new(comments)
                     .style(body_style())
-                    .block(title_block("temi : Comments"))
-                    .wrap(Wrap { trim: true })
+                    .block(title_block("Comments"))
+                    .wrap(Wrap { trim: false })
                     .scroll((app.vertical_scroll as u16, app.horizontal_scroll as u16));
 
                 f.render_widget(comment_block, chunks[1]);
