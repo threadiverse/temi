@@ -137,3 +137,12 @@ pub fn split_cells(text: &str, width: usize, out: &mut [String]) -> usize {
 
     height
 }
+
+/// Gets the wrapped height of provided text width.
+pub fn wrapped_height(text_width: usize, screen_width: usize) -> usize {
+    if screen_width == 0 {
+        0
+    } else {
+        (text_width / screen_width).saturating_add(text_width % screen_width) + 1
+    }
+}

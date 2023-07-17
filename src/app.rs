@@ -19,16 +19,115 @@ pub fn set_refresh(val: bool) {
 /// Convenience alias for the [Terminal](tui::Terminal) type used in `temi`.
 pub type TemiTerminal = Terminal<CrosstermBackend<std::io::Stdout>>;
 
+/// State for a scrollbar.
+#[derive(Clone, Default)]
+pub struct Scroll {
+    pub state: ScrollbarState,
+    pub position: u16,
+    pub content_length: u16,
+    pub viewport_length: u16,
+}
+
+impl Scroll {
+    /// Creates a new [Scroll].
+    pub fn new() -> Self {
+        Self {
+            state: ScrollbarState::default(),
+            position: 0,
+            content_length: 0,
+            viewport_length: 0,
+        }
+    }
+
+    /// Creates a new [Scroll] with the provided parameters.
+    pub fn create(position: u16, content_length: u16, viewport_length: u16) -> Self {
+        Self {
+            state: ScrollbarState::default()
+                .position(position)
+                .content_length(content_length)
+                .viewport_content_length(viewport_length),
+            position,
+            content_length,
+            viewport_length,
+        }
+    }
+
+    /// Gets the [Scroll] position.
+    pub fn position(&self) -> u16 {
+        self.position
+    }
+
+    /// Sets the [Scroll] position.
+    pub fn set_position(&mut self, pos: u16) {
+        self.position = pos;
+        self.state = self.state.position(pos);
+    }
+
+    /// Gets the [Scroll] content length.
+    pub fn content_length(&self) -> u16 {
+        self.content_length
+    }
+
+    /// Sets the [Scroll] content length.
+    pub fn set_content_length(&mut self, len: u16) {
+        self.content_length = len;
+        self.state = self.state.content_length(len);
+    }
+
+    /// Gets the [Scroll] viewport length.
+    pub fn viewport_length(&self) -> u16 {
+        self.viewport_length
+    }
+
+    /// Sets the [Scroll] viewport length.
+    pub fn set_viewport_length(&mut self, len: u16) {
+        self.viewport_length = len;
+
+        self.state = self.state.viewport_content_length(len);
+    }
+
+    /// Gets the [Margin] from the [Scroll] position.
+    pub fn margin() -> Margin {
+        Margin { vertical: 0, horizontal: 0 }
+    }
+
+    /// Moves to the next scrollbar position.
+    pub fn next(&mut self) {
+        self.position = self.position
+            .saturating_add(1)
+            .clamp(0, self.content_length - 1);
+
+        self.state.next();
+    }
+
+    /// Moves to the previous scrollbar position.
+    pub fn prev(&mut self) {
+        self.position = self.position.saturating_sub(1);
+
+        self.state.prev();
+    }
+
+    /// Moves to the first scrollbar position.
+    pub fn first(&mut self) {
+        self.position = 0;
+        self.state.first();
+    }
+
+    /// Moves to the last scrollbar position.
+    pub fn last(&mut self) {
+        self.position = self.content_length.saturating_sub(1);
+        self.state.last();
+    }
+}
+
 /// Represents the application state.
 pub struct App {
     pub instance_url: String,
     pub page: u64,
     pub posts: PostResponseTable,
     pub comments: HashMap<u64, CommentResponseTable>,
-    pub vertical_scroll_state: ScrollbarState,
-    pub horizontal_scroll_state: ScrollbarState,
-    pub vertical_scroll: usize,
-    pub horizontal_scroll: usize,
+    pub post_scroll: Scroll,
+    pub comment_scroll: Scroll,
 }
 
 impl App {
@@ -39,10 +138,8 @@ impl App {
             page: 1,
             posts,
             comments: HashMap::new(),
-            vertical_scroll_state: ScrollbarState::default(),
-            horizontal_scroll_state: ScrollbarState::default(),
-            vertical_scroll: 0,
-            horizontal_scroll: 0,
+            post_scroll: Scroll::new(),
+            comment_scroll: Scroll::new(),
         }
     }
 
