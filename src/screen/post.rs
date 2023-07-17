@@ -65,7 +65,6 @@ pub fn draw_post_screen(
 
                 let posts_height: usize = wrapped_height(post_lens.iter().sum(), size.width as usize);
                 app.post_scroll.set_content_length(posts_height as u16);
-                //app.post_scroll.set_viewport_length((size.height as f32 * 0.3) as u16);
 
                 let post_text = Paragraph::new(lines)
                     .style(body_style())
@@ -145,7 +144,6 @@ pub fn draw_post_screen(
                 }
 
                 app.comment_scroll.set_content_length(comment_height as u16);
-                //app.comment_scroll.set_viewport_length((size.height as f32 * 0.6) as u16);
 
                 let comment_block = Paragraph::new(comments)
                     .style(body_style())
