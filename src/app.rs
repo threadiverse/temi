@@ -88,12 +88,16 @@ impl Scroll {
 
     /// Gets the [Margin] from the [Scroll] position.
     pub fn margin() -> Margin {
-        Margin { vertical: 0, horizontal: 0 }
+        Margin {
+            vertical: 0,
+            horizontal: 0,
+        }
     }
 
     /// Moves to the next scrollbar position.
     pub fn next(&mut self) {
-        self.position = self.position
+        self.position = self
+            .position
             .saturating_add(1)
             .clamp(0, self.content_length - 1);
 
