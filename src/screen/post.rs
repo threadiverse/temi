@@ -93,38 +93,18 @@ pub fn draw_post_screen(
 
                 let mut comment_height = 0;
                 if let Some(c) = app.comments.get_mut(&p.post.id()) {
-                    c.items
-                        .sort_by(|cr, cs| {
-                            let cr_ids: Vec<u64> = cr.comment.path
-                                .split('.')
-                                .map(|p| p.parse::<u64>().unwrap_or(0))
-                                .collect();
-
-                            let cs_ids: Vec<u64> = cs.comment.path
-                                .split('.')
-                                .map(|p| p.parse::<u64>().unwrap_or(0))
-                                .collect();
-
-                            let cr_first = cr_ids.get(1).unwrap_or(&0);
-                            let cs_first = cs_ids.get(1).unwrap_or(&0);
-
-                            // FIXME: this is not a proper sort, we need multiple passes
-                            //
-                            // first, to group all the comments with the same parent.
-                            // then, to group all the comments with the same first child.
-                            // and so on, until the end depth is reached.
-                            // then each child comment group needs to be sorted earliest to latest.
-                            // ... chronology and sorting is hard ...
-                            //
-                            // this probably needs to be a recursive function that takes comment
-                            // depth as a parameter...
-                            cr_first.cmp(cs_first).then_with(|| cr_ids.len().cmp(&cs_ids.len()))
-                        });
+                    // sort comments chronologically, grouping by parent-child relation
+                    c.sort_comments(1);
 
                     for cr in c.items.iter() {
+                        // FIXME: filter for terminal control characters
                         let ct = cr.comment.content();
                         let a = cr.creator.name();
                         let n = cr.counts.child_count();
+
+                        // add child comment indicators by level
+                        // all comments have a root level (0), and at least one parent (1)
+                        // so, the first child is level 2
                         let tabs = "►".repeat(cr.comment.path.split('.').count().saturating_sub(2));
                         let blocks = "_".repeat(cr.comment.path.split('.').count().saturating_sub(2));
 
@@ -133,9 +113,6 @@ pub fn draw_post_screen(
                         let height = ct.len() + a.len() + tabs.len() + blocks.len() + info.len();
                         comment_height += wrapped_height(height, size.width as usize) + 2;
 
-                        // FIXME: comment indentation, child comments should be indented by depth
-                        // e.g. <parent>.<child0>, one level indent
-                        //      <parent>.<child0>.<subchild0> two level indent, etc.
                         comments.push(Line::from(vec![Span::raw(tabs.clone()), Span::raw(" "), Span::raw(ct)]));
                         comments.push(Line::from(vec![Span::raw(blocks), Span::raw(" "), Span::raw(info)]));
                         comments.push(Line::from(""));

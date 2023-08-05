@@ -14,6 +14,20 @@ pub struct Post {
 }
 
 impl Post {
+    /// Creates a new [Post].
+    pub const fn new() -> Self {
+        Self {
+            id: 0,
+            name: String::new(),
+            url: None,
+            deleted: false,
+            nsfw: false,
+            thumbnail_url: None,
+            ap_id: String::new(),
+            body: None,
+        }
+    }
+
     /// Gets the [Post] name.
     pub fn name(&self) -> &str {
         self.name.as_str()
