@@ -89,6 +89,12 @@ impl Comment {
     }
 }
 
+impl Default for Comment {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// List of [Comment]s for displaying in the TUI.
 #[derive(Clone, Debug)]
 pub struct CommentList {

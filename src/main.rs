@@ -47,14 +47,34 @@ async fn main() -> Result<()> {
             Screen::Post => {
                 if let Some(post) = app.posts.current() {
                     let post_id = post.post.id();
+                    let num_comments = post.counts.comments() as usize;
 
                     if app.comments.get(&post_id).is_none() || refresh() {
                         let instance_url = app.instance_url.as_str();
-                        let comment_url = format!("{instance_url}{comment_ep}?post_id={post_id}");
-                        let comments = dl_comments(comment_url.as_str()).await?;
+                        let mut responses = CommentResponses::new(Vec::with_capacity(num_comments));
+
+                        for page in 0..(num_comments / 50) {
+                            let page = page + 1;
+                            let comment_url = format!(
+                                "{instance_url}{comment_ep}?post_id={post_id}&page={page}&limit=50"
+                            );
+                            responses
+                                .comments
+                                .append(&mut dl_comments(comment_url.as_str()).await?.comments);
+                        }
+
+                        if num_comments % 50 > 0 {
+                            let page = (num_comments / 50) + 1;
+                            let comment_url = format!(
+                                "{instance_url}{comment_ep}?post_id={post_id}&page={page}&limit=50"
+                            );
+                            responses
+                                .comments
+                                .append(&mut dl_comments(comment_url.as_str()).await?.comments);
+                        }
 
                         app.comments.remove(&post_id);
-                        app.comments.insert(post_id, comments.into());
+                        app.comments.insert(post_id, responses.into());
 
                         set_refresh(false);
                     }

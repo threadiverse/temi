@@ -18,6 +18,24 @@ pub struct Creator {
 }
 
 impl Creator {
+    /// Creates a new [Creator].
+    pub const fn new() -> Self {
+        Self {
+            id: 0,
+            name: String::new(),
+            avatar: None,
+            banned: false,
+            published: String::new(),
+            actor_id: String::new(),
+            local: false,
+            icon: None,
+            deleted: false,
+            admin: false,
+            bot_account: false,
+            instance_id: 0,
+        }
+    }
+
     /// Gets the [Creator] name.
     pub fn name(&self) -> &str {
         self.name.as_str()
