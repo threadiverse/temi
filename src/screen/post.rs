@@ -53,15 +53,22 @@ pub fn draw_post_screen(
 
                 let post_lens = [title.len(), info.len(), published.len(), body.len()];
 
-                let lines = vec![
+                let mut lines = vec![
                     Line::from(title),
                     Line::from(""),
-                    Line::from(body),
+                ];
+
+                body.split("\n\n").map(|b| Line::from(b)).for_each(|b| {
+                    lines.push(b);
+                    lines.push(Line::from(""));
+                });
+
+                lines.extend_from_slice(&[
                     Line::from(""),
                     Line::from(""),
                     Line::from(info),
                     Line::from(url),
-                ];
+                ]);
 
                 let posts_height: usize = wrapped_height(post_lens.iter().sum(), size.width as usize);
                 app.post_scroll.set_content_length(posts_height as u16);
@@ -105,16 +112,20 @@ pub fn draw_post_screen(
                         // add child comment indicators by level
                         // all comments have a root level (0), and at least one parent (1)
                         // so, the first child is level 2
-                        let tabs = "►".repeat(cr.comment.path.split('.').count().saturating_sub(2));
-                        let blocks = "_".repeat(cr.comment.path.split('.').count().saturating_sub(2));
+                        let levels = cr.comment.path.split('.').count().saturating_sub(2);
+                        let tabs = "_|".repeat(levels);
 
                         let info = format!("[ author: {a}, child comments: {n} ]");
 
-                        let height = ct.len() + a.len() + tabs.len() + blocks.len() + info.len();
+                        let height = ct.len() + a.len() + (tabs.len() * 2) + info.len();
                         comment_height += wrapped_height(height, size.width as usize) + 2;
 
-                        comments.push(Line::from(vec![Span::raw(tabs.clone()), Span::raw(" "), Span::raw(ct)]));
-                        comments.push(Line::from(vec![Span::raw(blocks), Span::raw(" "), Span::raw(info)]));
+                        for c in ct.split("\n\n") {
+                            comments.push(Line::from(vec![Span::raw(tabs.clone()), Span::raw(" "), Span::raw(c)]));
+                            comments.push(Line::from(tabs.clone()));
+                        }
+
+                        comments.push(Line::from(vec![Span::raw(tabs.clone()), Span::raw(" "), Span::raw(info)]));
                         comments.push(Line::from(""));
                         comments.push(Line::from(""));
                     }

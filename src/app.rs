@@ -99,7 +99,7 @@ impl Scroll {
         self.position = self
             .position
             .saturating_add(1)
-            .clamp(0, self.content_length - 1);
+            .clamp(0, self.content_length.saturating_sub(1));
 
         self.state.next();
     }
