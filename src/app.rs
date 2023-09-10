@@ -2,7 +2,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 use hashbrown::HashMap;
 
-use tui::{backend::CrosstermBackend, prelude::*, Terminal};
+use tui::{backend::CrosstermBackend, prelude::*, widgets::*, Terminal};
 
 use crate::{comments::CommentResponseTable, posts::PostResponseTable};
 
@@ -43,9 +43,9 @@ impl Scroll {
     pub fn create(position: u16, content_length: u16, viewport_length: u16) -> Self {
         Self {
             state: ScrollbarState::default()
-                .position(position)
-                .content_length(content_length)
-                .viewport_content_length(viewport_length),
+                .position(position as usize)
+                .content_length(content_length as usize)
+                .viewport_content_length(viewport_length as usize),
             position,
             content_length,
             viewport_length,
@@ -60,7 +60,7 @@ impl Scroll {
     /// Sets the [Scroll] position.
     pub fn set_position(&mut self, pos: u16) {
         self.position = pos;
-        self.state = self.state.position(pos);
+        self.state = self.state.position(pos as usize);
     }
 
     /// Gets the [Scroll] content length.
@@ -71,7 +71,7 @@ impl Scroll {
     /// Sets the [Scroll] content length.
     pub fn set_content_length(&mut self, len: u16) {
         self.content_length = len;
-        self.state = self.state.content_length(len);
+        self.state = self.state.content_length(len as usize);
     }
 
     /// Gets the [Scroll] viewport length.
@@ -83,7 +83,7 @@ impl Scroll {
     pub fn set_viewport_length(&mut self, len: u16) {
         self.viewport_length = len;
 
-        self.state = self.state.viewport_content_length(len);
+        self.state = self.state.viewport_content_length(len as usize);
     }
 
     /// Gets the [Margin] from the [Scroll] position.

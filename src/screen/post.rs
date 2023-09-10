@@ -7,7 +7,7 @@ use std::sync::{
 use std::time;
 
 use crossterm::event;
-use tui::{prelude::*, widgets::scrollbar};
+use tui::{prelude::*, widgets::*};
 
 use crate::{
     app::{App, Scroll, TemiTerminal},
@@ -84,7 +84,6 @@ pub fn draw_post_screen(
                 let orientation = ScrollbarOrientation::VerticalRight;
                 let post_scrollbar = Scrollbar::default()
                     .orientation(orientation.clone())
-                    .symbols(scrollbar::VERTICAL)
                     .begin_symbol(Some("▲"))
                     .end_symbol(Some("▼"));
 
@@ -143,7 +142,6 @@ pub fn draw_post_screen(
 
                 let comment_scrollbar = Scrollbar::default()
                     .orientation(orientation.clone())
-                    .symbols(scrollbar::VERTICAL)
                     .begin_symbol(Some("▲"))
                     .end_symbol(Some("▼"));
 
