@@ -7,7 +7,7 @@ use std::sync::{
 use std::time;
 
 use crossterm::event;
-use tui::{layout::Constraint, prelude::*};
+use tui::{layout::Constraint, prelude::*, widgets::*};
 
 use crate::{
     app::{App, TemiTerminal},
