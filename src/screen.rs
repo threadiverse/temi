@@ -1,6 +1,10 @@
 use std::sync::atomic::{AtomicU16, Ordering};
 
-use tui::{prelude::*, style::Style, widgets::{Block, Borders}};
+use tui::{
+    prelude::*,
+    style::Style,
+    widgets::{Block, Borders},
+};
 
 mod post;
 mod posts_list;
