@@ -154,6 +154,15 @@ impl PostResponseTable {
         }
     }
 
+    /// Gets an optional mutable reference to the currently selected [PostResponse].
+    pub fn current_mut(&mut self) -> Option<&mut PostResponse> {
+        if let Some(i) = self.state.selected() {
+            self.items.get_mut(i)
+        } else {
+            None
+        }
+    }
+
     /// Clears the [TableState] selection.
     pub fn deselect(&mut self) {
         self.state.select(None);

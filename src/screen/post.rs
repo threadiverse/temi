@@ -23,7 +23,7 @@ pub fn draw_post_screen(
     stop: Arc<AtomicBool>,
 ) -> Result<()> {
     terminal.draw(|f| {
-        match app.posts.current() {
+        match app.posts.current_mut() {
             Some(p) => {
                 let size = f.size();
 
@@ -48,8 +48,8 @@ pub fn draw_post_screen(
                 let info = format!("creator: {creator}, published: {published}, comments: {comments}");
 
                 let url = p.post.url();
-                let title = p.post.name();
-                let body = p.post.body();
+                let title = p.post.name().chars().filter(|c| !c.is_control()).collect::<String>();
+                let body = p.post.body().chars().filter(|c| !c.is_control()).collect::<String>();
 
                 let post_lens = [title.len(), info.len(), published.len(), body.len()];
 
@@ -100,10 +100,12 @@ pub fn draw_post_screen(
                 let mut comment_height = 0;
                 if let Some(c) = app.comments.get_mut(&p.post.id()) {
                     // sort comments chronologically, grouping by parent-child relation
-                    c.sort_comments(1);
+                    if !p.post.sorted() {
+                        c.sort_comments(1);
+                        p.post.set_sorted(true);
+                    }
 
                     for cr in c.items.iter() {
-                        // FIXME: filter for terminal control characters
                         let ct = cr.comment.content();
                         let a = cr.creator.name();
                         let n = cr.counts.child_count();
@@ -120,8 +122,9 @@ pub fn draw_post_screen(
                         comment_height += wrapped_height(height, size.width as usize) + 2;
 
                         for c in ct.split("\n\n") {
-                            comments.push(Line::from(vec![Span::raw(tabs.clone()), Span::raw(" "), Span::raw(c)]));
+                            comments.push(Line::from(vec![Span::raw(tabs.clone()), Span::raw(" "), Span::raw(c.to_owned())]));
                             comments.push(Line::from(tabs.clone()));
+                            comment_height = comment_height.saturating_add(2);
                         }
 
                         comments.push(Line::from(vec![Span::raw(tabs.clone()), Span::raw(" "), Span::raw(info)]));

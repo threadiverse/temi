@@ -11,6 +11,7 @@ pub struct Post {
     pub thumbnail_url: Option<String>,
     pub ap_id: String,
     pub body: Option<String>,
+    pub sorted: Option<bool>,
 }
 
 impl Post {
@@ -25,6 +26,7 @@ impl Post {
             thumbnail_url: None,
             ap_id: String::new(),
             body: None,
+            sorted: None,
         }
     }
 
@@ -56,6 +58,18 @@ impl Post {
     /// Gets the [Post] AP ID.
     pub fn ap_id(&self) -> &str {
         self.ap_id.as_str()
+    }
+
+    pub fn sorted(&self) -> bool {
+        matches!(self.sorted, Some(true))
+    }
+
+    pub fn set_sorted(&mut self, val: bool) {
+        self.sorted = Some(val);
+    }
+
+    pub fn unset_sorted(&mut self) {
+        self.sorted.take();
     }
 }
 
