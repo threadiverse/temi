@@ -12,7 +12,7 @@ pub struct Creator {
     pub local: bool,
     pub icon: Option<String>,
     pub deleted: bool,
-    pub admin: bool,
+    pub admin: Option<bool>,
     pub bot_account: bool,
     pub instance_id: u64,
 }
@@ -30,7 +30,7 @@ impl Creator {
             local: false,
             icon: None,
             deleted: false,
-            admin: false,
+            admin: None,
             bot_account: false,
             instance_id: 0,
         }
