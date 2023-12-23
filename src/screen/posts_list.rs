@@ -57,7 +57,8 @@ pub fn draw_posts_screen(
 
         rows.push(Row::new(["| (q) quit | (Enter) select | (◄, p) prev page | (▲)  prev post | (▼)  next post | next page (n, ►) |"]));
 
-        let table = Table::new(rows)
+        let num_rows = rows.len();
+        let table = Table::new(rows, vec![Constraint::Length(size.width); num_rows])
             .style(body_style())
             .highlight_style(highlight_style())
             .column_spacing(0)
