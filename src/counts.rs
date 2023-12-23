@@ -6,7 +6,7 @@ use tui::widgets::ListState;
 /// [Comment](crate::comment::Comment), etc.
 #[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct Counts {
-    pub id: u64,
+    pub id: Option<u64>,
     pub post_id: Option<u64>,
     pub comment_id: Option<u64>,
     pub comments: Option<u64>,
@@ -27,7 +27,7 @@ impl Counts {
     /// Creates a new [Counts].
     pub const fn new() -> Counts {
         Self {
-            id: 0,
+            id: None,
             post_id: None,
             comment_id: None,
             comments: None,
@@ -46,8 +46,8 @@ impl Counts {
     }
 
     /// Gets the [Counts] ID.
-    pub const fn id(&self) -> u64 {
-        self.id
+    pub fn id(&self) -> u64 {
+        self.id.clone().unwrap_or(0)
     }
 
     /// Gets whether the [Counts] are for a [Post](crate::posts::Post).
