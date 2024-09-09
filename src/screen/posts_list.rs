@@ -24,7 +24,7 @@ pub fn draw_posts_screen(
     stop: Arc<AtomicBool>,
 ) -> Result<()> {
     terminal.draw(|f| {
-        let size = f.size();
+        let size = f.area();
 
         let frame_height = size.height as usize;
 

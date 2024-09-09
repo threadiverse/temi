@@ -25,7 +25,7 @@ pub fn draw_post_screen(
     terminal.draw(|f| {
         match app.posts.current_mut() {
             Some(p) => {
-                let size = f.size();
+                let size = f.area();
 
                 let chunks = Layout::default()
                     .direction(Direction::Vertical)
