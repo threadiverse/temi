@@ -2,6 +2,12 @@
 name = "temi"
 version = "0.1.2"
 edition = "2021"
+authors = ["Threadiverse developers"]
+repository = "https://github.com/threadiverse/temi"
+categories = ["command-line-interface", "command-line-utilities", "web-programming"]
+description = "Command-line, lightweight TUI client for Lemmy"
+keywords = ["lemmy", "threadiverse", "cli", "tui"]
+license = "GPL-3.0-or-later"
 
 [dependencies]
 crossterm = "0.26"
