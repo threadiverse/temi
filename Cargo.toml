@@ -14,9 +14,8 @@ signal-hook = "0.3"
 version = "0.24"
 
 [dependencies.tui]
-version = "0.25"
+version = "0.28"
 package = "ratatui"
-git = "https://github.com/tui-rs-revival/ratatui"
 
 [dependencies.hyper]
 version = "0.14"
