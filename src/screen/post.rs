@@ -89,7 +89,7 @@ pub fn draw_post_screen(
 
                 f.render_stateful_widget(
                     post_scrollbar,
-                    chunks[0].inner(&Scroll::margin()),
+                    chunks[0].inner(Scroll::margin()),
                     &mut app.post_scroll.state,
                 );
 
@@ -119,17 +119,27 @@ pub fn draw_post_screen(
                         let info = format!("[ author: {a}, child comments: {n} ]");
 
                         let height = ct.len() + a.len() + (tabs.len() * 2) + info.len();
-                        comment_height += wrapped_height(height, size.width as usize) + 2;
+                        let width = size.width as usize;
+                        comment_height += wrapped_height(height, width) + 2;
 
-                        for c in ct.split("\n\n") {
-                            comments.push(Line::from(vec![Span::raw(tabs.clone()), Span::raw(" "), Span::raw(c.to_owned())]));
+                        ct.split("\n\n").for_each(|c| {
+                            filter_line(String::from(c).as_str(), width)
+                                .map(|line| Line::from(vec![
+                                    Span::raw(tabs.clone()),
+                                    Span::raw(" "),
+                                    Span::raw(line),
+                                ]))
+                                .for_each(|line| comments.push(line));
+
                             comments.push(Line::from(tabs.clone()));
                             comment_height = comment_height.saturating_add(2);
-                        }
+                        });
 
-                        comments.push(Line::from(vec![Span::raw(tabs.clone()), Span::raw(" "), Span::raw(info)]));
-                        comments.push(Line::from(""));
-                        comments.push(Line::from(""));
+                        comments.extend_from_slice(&[
+                            Line::from(vec![Span::raw(tabs.clone()), Span::raw(" "), Span::raw(info)]),
+                            Line::from(""),
+                            Line::from(""),
+                        ]);
                     }
                 }
 
@@ -150,7 +160,7 @@ pub fn draw_post_screen(
 
                 f.render_stateful_widget(
                     comment_scrollbar,
-                    chunks[1].inner(&Scroll::margin()),
+                    chunks[1].inner(Scroll::margin()),
                     &mut app.comment_scroll.state,
                 );
 
@@ -198,4 +208,34 @@ pub fn draw_post_screen(
     }
 
     Ok(())
+}
+
+fn filter_line<'l>(raw: &'l str, width: usize) -> impl Iterator<Item = String> + 'l {
+    let mut words = raw.split(" ").peekable();
+
+    std::iter::from_fn(move || {
+        if words.peek().is_some() {
+            let mut line_len = 0;
+            let mut line = String::new();
+
+            while let Some(w) = words.next() {
+                let wf: String = w
+                    .chars()
+                    .filter(|c| !c.is_whitespace() && !c.is_control())
+                    .collect();
+                let count = wf.chars().count();
+
+                if line_len + count >= width {
+                    break;
+                } else {
+                    line_len += count;
+                    line = format!("{line} {wf}");
+                }
+            }
+
+            Some(line)
+        } else {
+            None
+        }
+    })
 }
