@@ -1,7 +1,7 @@
 use tui::widgets::ListState;
 
 /// Represents a post as returned in a posts API response.
-#[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
 pub struct Post {
     pub id: u64,
     pub name: String,

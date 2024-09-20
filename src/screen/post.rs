@@ -101,7 +101,7 @@ pub fn draw_post_screen(
                 if let Some(c) = app.comments.get_mut(&p.post.id()) {
                     // sort comments chronologically, grouping by parent-child relation
                     if !p.post.sorted() {
-                        c.sort_comments(1);
+                        c.sort_comments();
                         p.post.set_sorted(true);
                     }
 
@@ -226,6 +226,7 @@ fn filter_line<'l>(raw: &'l str, width: usize) -> impl Iterator<Item = String> +
                 let count = wf.chars().count();
 
                 if line_len + count >= width {
+                    line = format!("{line} {wf}");
                     break;
                 } else {
                     line_len += count;

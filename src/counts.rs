@@ -4,7 +4,7 @@ use tui::widgets::ListState;
 
 /// Represents the count statistics for a [Post](crate::posts::Post),
 /// [Comment](crate::comment::Comment), etc.
-#[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
 pub struct Counts {
     pub id: Option<u64>,
     pub post_id: Option<u64>,

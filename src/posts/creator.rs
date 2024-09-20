@@ -1,7 +1,7 @@
 use tui::widgets::ListState;
 
 /// Represents a post creator as returned in a posts API response.
-#[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
 pub struct Creator {
     pub id: u64,
     pub name: String,
