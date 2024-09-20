@@ -102,7 +102,7 @@ pub fn load_posts(file_name: &str) -> Result<PostResponses> {
 }
 
 /// Represents a response from the [Post endpoint](crate::endpoint::Endpoint).
-#[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
 pub struct PostResponse {
     pub post: Post,
     pub creator: Creator,
@@ -110,7 +110,7 @@ pub struct PostResponse {
 }
 
 /// Represents a list of responses to the [Post endpoint](crate::endpoint::Endpoint).
-#[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
 pub struct PostResponses {
     pub posts: Vec<PostResponse>,
 }

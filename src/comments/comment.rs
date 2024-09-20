@@ -3,7 +3,7 @@
 use tui::widgets::ListState;
 
 /// Represents a comment on a [Post](crate::posts::Post).
-#[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
 pub struct Comment {
     pub id: u64,
     pub creator_id: u64,

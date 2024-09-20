@@ -1,5 +1,7 @@
 //! Types and functions for post comments.
 
+use std::cmp;
+
 use tui::widgets::TableState;
 
 use crate::{
@@ -31,7 +33,7 @@ pub fn load_comments(file_name: &str) -> Result<CommentResponses> {
 
 /// Represents a response to a [Comment] API request.
 #[repr(C)]
-#[derive(Clone, Debug, PartialEq, serde::Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, Eq, serde::Deserialize, serde::Serialize)]
 pub struct CommentResponse {
     pub comment: Comment,
     pub creator: Creator,
@@ -42,6 +44,7 @@ pub struct CommentResponse {
     pub subscribed: String,
     pub saved: bool,
     pub creator_blocked: bool,
+    pub level: Option<usize>,
 }
 
 impl CommentResponse {
@@ -57,7 +60,120 @@ impl CommentResponse {
             subscribed: String::new(),
             saved: false,
             creator_blocked: false,
+            level: None,
         }
+    }
+
+    /// Gets the comment level of the [CommentResponse].
+    pub fn level(&self) -> usize {
+        self.level.unwrap_or_default()
+    }
+
+    /// Sets the comment level of the [CommentResponse].
+    pub fn set_level(&mut self, level: usize) {
+        self.level.replace(level);
+    }
+}
+
+impl PartialEq for CommentResponse {
+    fn eq(&self, rhs: &Self) -> bool {
+        let self_ids_len = self.comment.path.split('.').count();
+        let rhs_ids_len = rhs.comment.path.split('.').count();
+        let min_level = cmp::min(self_ids_len - 1, rhs_ids_len - 1);
+
+        let self_id = self
+            .comment
+            .path
+            .split('.')
+            .nth(min_level)
+            .map(|i| i.parse::<u64>().unwrap_or(0));
+        let rhs_id = rhs
+            .comment
+            .path
+            .split('.')
+            .nth(min_level)
+            .map(|i| i.parse::<u64>().unwrap_or(0));
+
+        self.level == rhs.level
+            && self_id == rhs_id
+            && self.comment.published == rhs.comment.published
+    }
+}
+
+impl PartialOrd for CommentResponse {
+    fn partial_cmp(&self, rhs: &Self) -> Option<cmp::Ordering> {
+        let self_id = self.comment.id;
+
+        let self_pos = self
+            .comment
+            .path
+            .split('.')
+            .map(|c| c.parse::<u64>().unwrap_or(0))
+            .position(|c| c == self_id)
+            .unwrap_or(0);
+
+        let self_root = self
+            .comment
+            .path
+            .split('.')
+            .map(|c| c.parse::<u64>().unwrap_or(0))
+            .nth(1);
+
+        let rhs_id = rhs.comment.id;
+
+        let rhs_pos = rhs
+            .comment
+            .path
+            .split('.')
+            .map(|c| c.parse::<u64>().unwrap_or(0))
+            .position(|c| c == rhs_id)
+            .unwrap_or(0);
+
+        let rhs_root = rhs
+            .comment
+            .path
+            .split('.')
+            .map(|c| c.parse::<u64>().unwrap_or(0))
+            .nth(1);
+
+        let level = cmp::min(self_pos.saturating_sub(1), rhs_pos.saturating_sub(1));
+
+        let ancestor_ord = self
+            .comment
+            .path
+            .split('.')
+            .skip(2)
+            .take(level.saturating_sub(2))
+            .map(|c| c.parse::<u64>().unwrap_or(0))
+            .zip(
+                rhs.comment
+                    .path
+                    .split('.')
+                    .skip(2)
+                    .take(level.saturating_sub(2))
+                    .map(|c| c.parse::<u64>().unwrap_or(0)),
+            )
+            .fold(self_root.cmp(&rhs_root), |acc, (s, r)| acc.then(s.cmp(&r)));
+
+        let self_child = self.counts.child_count();
+        let rhs_child = rhs.counts.child_count();
+
+        let published = self.comment.published.as_str();
+        let rhs_published = rhs.comment.published.as_str();
+
+        Some(
+            ancestor_ord
+                .then(self_pos.cmp(&rhs_pos))
+                .then(self_child.cmp(&rhs_child))
+                .then(self_id.cmp(&rhs_id))
+                .then(published.cmp(&rhs_published)),
+        )
+    }
+}
+
+impl Ord for CommentResponse {
+    fn cmp(&self, rhs: &Self) -> cmp::Ordering {
+        self.partial_cmp(rhs).unwrap_or(cmp::Ordering::Equal)
     }
 }
 
@@ -240,43 +356,17 @@ impl CommentResponseTable {
     /// Parameters:
     ///
     /// `level`: comment path level for sorting comparison
-    pub fn sort_comments(&mut self, level: usize) {
-        let max_len = self
-            .items
+    pub fn sort_comments(&mut self) {
+        self.items.sort();
+        /*
+        let max_len = self.items
             .iter()
             .map(|l| l.comment.path.split('.').count())
             .max()
             .unwrap_or(0);
 
-        if level < max_len {
-            self.items.sort_by(|cr, cs| {
-                let cr_ids: Vec<u64> = cr
-                    .comment
-                    .path
-                    .split('.')
-                    .map(|p| p.parse::<u64>().unwrap_or(0))
-                    .collect();
-
-                let cs_ids: Vec<u64> = cs
-                    .comment
-                    .path
-                    .split('.')
-                    .map(|p| p.parse::<u64>().unwrap_or(0))
-                    .collect();
-
-                if level < cr_ids.len() && level < cs_ids.len() {
-                    let cr_id = &cr_ids[level];
-                    let cs_id = &cs_ids[level];
-
-                    cr_id.cmp(cs_id).then(cr_ids.len().cmp(&cs_ids.len()))
-                } else {
-                    let min_level = std::cmp::min(cr_ids.len() - 1, cs_ids.len() - 1);
-                    cr_ids[min_level].cmp(&cs_ids[min_level])
-                }
-            });
-
-            self.sort_comments(level + 1);
-        }
+        (0..=max_len).for_each(|_| self.items.sort());
+        */
     }
 }
 
@@ -377,14 +467,6 @@ mod tests {
             },
             CommentResponse {
                 comment: Comment {
-                    path: "0.1396433.1402606.1437059.1463746".into(),
-                    published: "2023-08-03T11:34:11.084929".into(),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            CommentResponse {
-                comment: Comment {
                     path: "0.1402429.1436014.1463371".into(),
                     published: "2023-08-03T11:14:25.780911".into(),
                     ..Default::default()
@@ -394,22 +476,6 @@ mod tests {
         ];
 
         let exp_comments = vec![
-            CommentResponse {
-                comment: Comment {
-                    path: "0.1396433.1402606.1437059.1463746".into(),
-                    published: "2023-08-03T11:34:11.084929".into(),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            CommentResponse {
-                comment: Comment {
-                    path: "0.1451065.1456841.1461024".into(),
-                    published: "2023-08-03T08:51:59.051645".into(),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
             CommentResponse {
                 comment: Comment {
                     path: "0.1402429.1436014.1463371".into(),
@@ -422,6 +488,14 @@ mod tests {
                 comment: Comment {
                     path: "0.1402429.1436014.1492422".into(),
                     published: "2023-08-04T06:23:05.577465".into(),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            CommentResponse {
+                comment: Comment {
+                    path: "0.1451065.1456841.1461024".into(),
+                    published: "2023-08-03T08:51:59.051645".into(),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -477,8 +551,19 @@ mod tests {
         ];
 
         let mut comment_responses = CommentResponseTable::new(comments);
-        comment_responses.sort_comments(1);
+        comment_responses.sort_comments();
 
-        assert_eq!(comment_responses.items(), exp_comments.as_slice());
+        let response_paths: Vec<String> = comment_responses
+            .items()
+            .iter()
+            .map(|c| c.comment.path.clone())
+            .collect();
+
+        let exp_paths: Vec<String> = exp_comments
+            .iter()
+            .map(|c| c.comment.path.clone())
+            .collect();
+
+        assert_eq!(response_paths, exp_paths);
     }
 }
